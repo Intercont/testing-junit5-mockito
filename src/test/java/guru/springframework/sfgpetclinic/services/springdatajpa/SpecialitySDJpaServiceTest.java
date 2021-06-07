@@ -2,7 +2,6 @@ package guru.springframework.sfgpetclinic.services.springdatajpa;
 
 import guru.springframework.sfgpetclinic.model.Speciality;
 import guru.springframework.sfgpetclinic.repositories.SpecialtyRepository;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -12,7 +11,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -74,6 +74,23 @@ class SpecialitySDJpaServiceTest {
         assertThat(foundSpeciality).isNotNull();
 
         verify(specialtyRepository).findById(anyLong());
+    }
+
+    @Test
+    void findByIdBDDTest() {
+        //BDD APROACH TEST STRUCTURE: GIVEN - WHEN - THEN
+
+        //GIVEN
+        Speciality speciality = new Speciality();
+        given(specialtyRepository.findById(1L)).willReturn(Optional.of(speciality)); //same as above but in a BDD Style
+
+        //WHEN
+        Speciality foundSpeciality = specialitySDJpaService.findById(1L);
+
+        //THEN
+        assertThat(foundSpeciality).isNotNull();
+        then(specialtyRepository).should().findById(anyLong()); //same as above in the BDD Style
+        then(specialtyRepository).shouldHaveNoMoreInteractions();
     }
 
     @Test
