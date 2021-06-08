@@ -2,6 +2,7 @@ package guru.springframework.sfgpetclinic.services.springdatajpa;
 
 import guru.springframework.sfgpetclinic.model.Speciality;
 import guru.springframework.sfgpetclinic.repositories.SpecialtyRepository;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -11,8 +12,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -81,5 +82,32 @@ class SpecialitySDJpaServiceTest {
         Speciality speciality = new Speciality();
         specialitySDJpaService.delete(speciality);
         verify(specialtyRepository).delete(any(Speciality.class));
+    }
+
+    @Test
+    void testDeleteDoThrow() {
+        doThrow(new RuntimeException("kabum")).when(specialtyRepository).delete(any());
+        assertThrows(RuntimeException.class, () -> specialitySDJpaService.delete(any(Speciality.class)));
+        verify(specialtyRepository).delete(any());
+    }
+
+    @Test
+    void testDeleteBDDThrow() {
+        //given
+        willThrow(new RuntimeException("kabum invertido")).given(specialtyRepository).delete(any());
+//        when
+        assertThrows(RuntimeException.class, () -> specialitySDJpaService.delete(any(Speciality.class)));
+//        then
+        then(specialtyRepository).should().delete(any());
+    }
+
+    @Test
+    void testFindByIdBDDThrows() {
+        //given
+        given(specialtyRepository.findById(anyLong())).willThrow(new RuntimeException("kabum"));
+        //when
+        assertThrows(RuntimeException.class, () -> specialitySDJpaService.findById(anyLong()));
+        //then
+        then(specialtyRepository).should().findById(anyLong());
     }
 }
