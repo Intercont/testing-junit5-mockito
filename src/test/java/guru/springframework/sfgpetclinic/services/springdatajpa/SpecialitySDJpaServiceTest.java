@@ -12,7 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.*;
 
@@ -109,5 +109,51 @@ class SpecialitySDJpaServiceTest {
         assertThrows(RuntimeException.class, () -> specialitySDJpaService.findById(anyLong()));
         //then
         then(specialtyRepository).should().findById(anyLong());
+    }
+
+    @Test
+    void testSaveLambdaArgumentMatcher() {
+        //given
+        final String MATCH_ME = "MATCH_ME";
+        Speciality speciality = new Speciality();
+        speciality.setDescription(MATCH_ME);
+
+        Speciality savedSpeciality = new Speciality();
+        savedSpeciality.setId(1L);
+        savedSpeciality.setDescription(MATCH_ME);
+
+        //mock to only return when the description matches MATCH_ME - argThat
+        given(specialtyRepository.save(argThat(a -> a.getDescription().equals(MATCH_ME)))).willReturn(savedSpeciality);
+
+        //when
+        Speciality returnedSpeciality = specialitySDJpaService.save(speciality);
+
+        //then
+        assertThat(returnedSpeciality.getId()).isEqualTo(1L);
+//        assertEquals(Long.valueOf(1L), returnedSpeciality.getId());
+//        assertEquals(1L, returnedSpeciality.getId().longValue());
+        assertThat(returnedSpeciality.getDescription()).isEqualTo(MATCH_ME);
+    }
+
+    @Test
+    void testSaveLambdaArgumentMatcherNoMatch() {
+        //given
+        final String MATCH_ME = "MATCH_ME";
+        Speciality speciality = new Speciality();
+        speciality.setDescription("Not a match, bacon cry");
+
+        Speciality savedSpeciality = new Speciality();
+        savedSpeciality.setId(1L);
+        savedSpeciality.setDescription(MATCH_ME);
+
+        //mock to only return when the description matches MATCH_ME - argThat
+//        given(specialtyRepository.save(argThat(a -> a.getDescription().equals(MATCH_ME)))).willReturn(savedSpeciality);
+        lenient().when(specialtyRepository.save(argThat(a -> a.getDescription().equals(MATCH_ME)))).thenReturn(savedSpeciality);
+
+        //when
+        Speciality returnedSpeciality = specialitySDJpaService.save(speciality);
+
+        //then
+        assertNull(returnedSpeciality);
     }
 }
