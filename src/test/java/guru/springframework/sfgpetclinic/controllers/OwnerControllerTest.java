@@ -7,10 +7,7 @@ import guru.springframework.sfgpetclinic.services.OwnerService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
@@ -18,7 +15,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
@@ -33,6 +30,9 @@ class OwnerControllerTest {
 
     @Mock
     private BindingResult bindingResult;
+
+    @Mock
+    private Model model;
 
     @InjectMocks
     private OwnerController ownerController;
@@ -98,13 +98,18 @@ class OwnerControllerTest {
     void processFindFormWildcardFoundMany() {
         //given
         Owner owner = new Owner(1L, "Igor", "FindManyMore");
+        InOrder inOrder = Mockito.inOrder(service, model); //specify the elements to validate the order of calling
 
         //when
-        String viewName = ownerController.processFindForm(owner, bindingResult, mock(Model.class));
+        String viewName = ownerController.processFindForm(owner, bindingResult, model);
 
         //then
         assertThat("%FindManyMore%").isEqualToIgnoringCase(stringArgumentCaptor.getValue());
         assertThat("owners/ownersList").isEqualToIgnoringCase(viewName);
+
+        //inOrder Asserts
+        inOrder.verify(service).findAllByLastNameLike(anyString()); //1st that should be called - the order is given by how you list the verifications
+        inOrder.verify(model).addAttribute(anyString(), anyList());//2nd - after the service, the model should be called anytime
 
     }
 
