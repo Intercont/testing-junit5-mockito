@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,9 +19,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class})
+@MockitoSettings(strictness = Strictness.LENIENT)
 class OwnerControllerTest {
 
     private static final String REDIRECT_OWNERS_5 = "redirect:/owners/5";
@@ -77,6 +80,7 @@ class OwnerControllerTest {
         //then
         assertThat("%Fraga%").isEqualToIgnoringCase(stringArgumentCaptor.getValue());
         assertThat("redirect:/owners/1").isEqualToIgnoringCase(viewName);
+        verifyZeroInteractions(model);
 
     }
 
@@ -91,6 +95,7 @@ class OwnerControllerTest {
         //then
         assertThat("%DontFindMe%").isEqualToIgnoringCase(stringArgumentCaptor.getValue());
         assertThat("owners/findOwners").isEqualToIgnoringCase(viewName);
+        verifyZeroInteractions(model);
 
     }
 
@@ -110,6 +115,7 @@ class OwnerControllerTest {
         //inOrder Asserts
         inOrder.verify(service).findAllByLastNameLike(anyString()); //1st that should be called - the order is given by how you list the verifications
         inOrder.verify(model).addAttribute(anyString(), anyList());//2nd - after the service, the model should be called anytime
+        verifyNoMoreInteractions(model);
 
     }
 
