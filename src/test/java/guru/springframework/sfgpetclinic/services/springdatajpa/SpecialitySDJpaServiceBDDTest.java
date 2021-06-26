@@ -89,6 +89,28 @@ class SpecialitySDJpaServiceBDDTest {
     }
 
     @Test
+    void testDeleteByIdLongTimeSucess() {
+        //given
+
+        //when
+        new Thread(specialitySDJpaService.asyncOperation).start();
+
+        //then
+        then(specialtyRepository).should(timeout(2000).atLeastOnce()).deleteById(1L); //success - timeout is used to test concurrency
+    }
+
+    @Test
+    void testDeleteByIdLongTimeFails() {
+        //given
+
+        //when
+        new Thread(specialitySDJpaService.asyncOperation).start();
+
+        //then
+        then(specialtyRepository).should(timeout(100).times(0)).deleteById(1L); //failure - timeout is used to test concurrency
+    }
+
+    @Test
     void testDelete() {
         //when
         specialitySDJpaService.delete(new Speciality());

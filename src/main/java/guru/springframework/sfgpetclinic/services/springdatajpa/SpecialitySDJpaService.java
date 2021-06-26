@@ -42,4 +42,16 @@ public class SpecialitySDJpaService implements SpecialtyService {
     public void deleteById(Long aLong) {
         specialtyRepository.deleteById(aLong);
     }
+
+    public final Runnable asyncOperation = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                Thread.sleep(1000);
+                specialtyRepository.deleteById(1L);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    };
 }
